@@ -2,6 +2,7 @@ import { User } from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { JWT_SECRET } from "../config.js";
+import { imageUploadUnit } from '../helper/cloudinarySetUp.js';
 
 // Generate JWT Token
 const generateToken = (user) => {
@@ -14,7 +15,6 @@ const generateToken = (user) => {
 // handle Image Upload Url
 export const uploadProfilePicture = async (req, res) => {
   try {
-
       // Convert file buffer to Base64 format for Cloudinary
       const b64 = Buffer.from(req.file.buffer).toString('base64');
       const url = `data:${req.file.mimetype};base64,${b64}`;
@@ -52,7 +52,7 @@ export const registerUser = async (req, res) => {
     const newUser = new User({
       name,
       email,
-      role: role === "admin" ? "taxpayer" : role,
+      role: role || "Viewer",
       hashed_password: password, // Store hashed password
     });
 
