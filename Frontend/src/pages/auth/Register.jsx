@@ -1,139 +1,123 @@
-import React from 'react';
-import { MdEmail, MdLock, MdPerson } from 'react-icons/md';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "../../hooks/useAuth";
+import TermsCondition from "./TermsCondition.jsx";
+import { FaEnvelope, FaUser, FaLock } from "react-icons/fa";
 
 const Register = () => {
-    return (
-        <div style={styles.pageContainer}>
-            {/* Added page container */}
-            <div style={styles.container}>
-                {/* Logo */}
-                <div style={styles.logoContainer}>
-                    <img
-                        src="https://pplx-res.cloudinary.com/image/upload/v1742377254/user_uploads/vrxQUNtPaIhOpUi/Logo-removebg-preview-1.jpg"
-                        alt="Product Info Hub Logo"
-                        style={styles.logo}
-                    />
-                </div>
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-                {/* Full Name Input */}
-                <div style={styles.inputContainer}>
-                    <MdPerson style={styles.inputIcon} />
-                    <input
-                        type="text"
-                        placeholder="Full Name"
-                        style={styles.input}
-                    />
-                </div>
+  const [formData, setFormData] = useState({
+    email: "",
+    fullName: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
-                {/* Email Input */}
-                <div style={styles.inputContainer}>
-                    <MdEmail style={styles.inputIcon} />
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        style={styles.input}
-                    />
-                </div>
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-                {/* Password Input */}
-                <div style={styles.inputContainer}>
-                    <MdLock style={styles.inputIcon} />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        style={styles.input}
-                    />
-                </div>
+  const handleRegister = (e) => {
+    e.preventDefault();
+    setError(null);
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    setShowTermsModal(true);
+  };
 
-                {/* Confirm Password Input */}
-                <div style={styles.inputContainer}>
-                    <MdLock style={styles.inputIcon} />
-                    <input
-                        type="password"
-                        placeholder="Confirm Password"
-                        style={styles.input}
-                    />
-                </div>
+  const handleAcceptTerms = async () => {
+    setShowTermsModal(false);
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post(
+        "http://localhost:5559/users/register",
+        formData
+      );
+      if (response.data.success) {
+        login(response.data.token, response.data.user, true);
+        navigate("/profile");
+      } else {
+        setError(response.data.message || "Registration failed");
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "An unknown error occurred."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                {/* Register Button */}
-                <button style={styles.registerButton}>Register</button>
+  const handleCancelTerms = () => {
+    setShowTermsModal(false);
+  };
 
-                {/* Login Link */}
-                <div style={styles.loginContainer}>
-                    I have an account? <a href="/login" style={styles.loginLink}>Login</a>
-                </div>
-            </div>
+  return (
+    <div
+      className="w-screen h-screen flex flex-col justify-center items-center"
+      style={{
+        backgroundImage: "url('/backrd4.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+        <div className="flex justify-center mb-5">
+          <img
+            src="/logo.png"
+            alt="Logo"
+            className="w-[200px] h-auto"
+          />
         </div>
-    );
-};
 
-const styles = {
-    pageContainer: {
-        // Styles for centering the form and background
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh', // Make sure it covers the entire screen height
-         
-        position: 'relative',  // For absolute positioning of circles
-        overflow: 'hidden', // Hide any potential overflow
-    },
-    container: {
-        width: '350px',
-        padding: '30px',
-        backgroundColor: '#fff',
-        borderRadius: '15px',
-        boxShadow: '0 0 20px rgba(0, 0, 0, 0.1)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        fontFamily: 'Arial, sans-serif',
-    },
-    logoContainer: {
-        marginBottom: '25px',
-    },
-    logo: {
-        width: '200px',
-        height: 'auto',
-    },
-    inputContainer: {
-        width: '100%',
-        position: 'relative',
-        marginBottom: '20px',
-    },
-    inputIcon: {
-        position: 'absolute',
-        left: '10px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        color: '#888',
-    },
-    input: {
-        width: '100%',
-        padding: '12px 40px',
-        borderRadius: '5px',
-        border: '1px solid #ddd',
-        fontSize: '16px',
-        boxSizing: 'border-box',
-    },
-    registerButton: {
-        width: '100%',
-        padding: '12px',
-        backgroundColor: '#007bff',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '5px',
-        fontSize: '16px',
-        cursor: 'pointer',
-        marginBottom: '20px',
-    },
-    loginContainer: {
-        fontSize: '14px',
-    },
-    loginLink: {
-        color: '#007bff',
-        textDecoration: 'none',
-    },
+        {error && <p className="text-red-500 text-center mb-3">{error}</p>}
+        <form onSubmit={handleRegister}>
+          {[
+            { name: "email", type: "email", placeholder: "Email", icon: <FaEnvelope /> },
+            { name: "fullName", type: "text", placeholder: "Full Name", icon: <FaUser /> },
+            { name: "password", type: "password", placeholder: "Password", icon: <FaLock /> },
+            { name: "confirmPassword", type: "password", placeholder: "Confirm Password", icon: <FaLock /> },
+          ].map((field, index) => (
+            <div key={index} className="mb-4 relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                {field.icon}
+              </div>
+              <input
+                type={field.type}
+                name={field.name}
+                placeholder={field.placeholder}
+                className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                value={formData[field.name]}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          ))}
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all"
+            disabled={loading}
+          >
+            {loading ? "Registering..." : "Register"}
+          </button>
+        </form>
+        <p className="text-center text-gray-600 mt-4">
+          I have an account? <Link to="/login" className="text-blue-600 font-semibold hover:underline">Login</Link>
+        </p>
+      </div>
+      {showTermsModal && <TermsCondition onAccept={handleAcceptTerms} onCancel={handleCancelTerms} loading={loading} />}
+    </div>
+  );
 };
 
 export default Register;
