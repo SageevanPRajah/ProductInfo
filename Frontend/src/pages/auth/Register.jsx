@@ -10,19 +10,24 @@ const Register = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
-    fullName: "",
+    role: "Viewer",
     password: "",
     confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Update form fields
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // On form submission, validate and show the Terms modal
   const handleRegister = (e) => {
     e.preventDefault();
     setError(null);
@@ -33,6 +38,7 @@ const Register = () => {
     setShowTermsModal(true);
   };
 
+  // When user accepts the terms, complete the registration
   const handleAcceptTerms = async () => {
     setShowTermsModal(false);
     setLoading(true);
@@ -43,23 +49,32 @@ const Register = () => {
         formData
       );
       if (response.data.success) {
+        // Log the user in with the returned token and user data
         login(response.data.token, response.data.user, true);
         navigate("/profile");
       } else {
         setError(response.data.message || "Registration failed");
       }
     } catch (err) {
-      setError(
-        err.response?.data?.message || "An unknown error occurred."
-      );
+      if (err.response) {
+        setError(err.response.data?.message || "Registration failed");
+      } else if (err.request) {
+        setError("No response from the server. Check your connection.");
+      } else {
+        setError("An unknown error occurred.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // Cancel modal and go back to registration form
   const handleCancelTerms = () => {
     setShowTermsModal(false);
   };
+
+  
+
 
   return (
     <div
@@ -84,7 +99,7 @@ const Register = () => {
         <form onSubmit={handleRegister}>
           {[
             { name: "email", type: "email", placeholder: "Email", icon: <FaEnvelope /> },
-            { name: "fullName", type: "text", placeholder: "Full Name", icon: <FaUser /> },
+            { name: "name", type: "text", placeholder: "Full Name", icon: <FaUser /> },
             { name: "password", type: "password", placeholder: "Password", icon: <FaLock /> },
             { name: "confirmPassword", type: "password", placeholder: "Confirm Password", icon: <FaLock /> },
           ].map((field, index) => (
