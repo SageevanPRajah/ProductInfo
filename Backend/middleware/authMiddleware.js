@@ -20,3 +20,28 @@ export const protect = async (req, res, next) => {
     res.status(401).json({ message: "Not authorized, invalid token" });
   }
 };
+
+// Admin-only routes
+export const adminOnly = (req, res, next) => {
+  if (req.user.role !== "Admin") {
+    return res.status(403).json({ message: "Admin access required" });
+  }
+  next();
+};
+
+// Object Creator-only routes
+export const ObjectCreator = (req, res, next) => {
+  if (req.user.role !== "Object Creator") {
+    return res.status(403).json({ message: "Object Creator access required" });
+  }
+  next();
+};
+
+// Admin or Object Creator routes
+export const adminOrObjectCreator = (req, res, next) => {
+  if (req.user.role !== "Admin" && req.user.role !== "Object Creator") {
+    return res.status(403).json({ message: "Admin or Object Creator access required" });
+  }
+  next();
+};
+
