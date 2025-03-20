@@ -17,11 +17,10 @@ passport.use(
 
         if (!user) {
           user = new User({
-            firstName: profile.name.givenName,
-            lastName: profile.name.familyName,
+            name: profile.name.givenName,
             email: profile.emails[0].value,
             profilePicture: profile.photos[0].value,
-            role: "taxpayer",
+            role: "Viewer",
             hashed_password: "google-auth",
           });
           await user.save();
