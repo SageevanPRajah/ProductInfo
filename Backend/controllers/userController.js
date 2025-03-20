@@ -39,44 +39,43 @@ export const uploadProfilePicture = async (req, res) => {
 
 // Register User
 export const registerUser = async (req, res) => {
-    try {
-      const { name, email, role, password } = req.body;
-  
-      if (!name || !email || !password) {
-        return res.status(400).json({ success: false, message: "All fields are required" });
-      }
-  
-      const existingUser = await User.findOne({ email });
-      if (existingUser) return res.status(400).json({ success: false, message: "User already exists" });
-  
-      const newUser = new User({
-        name,
-        email,
-        role: role || "Viewer", 
-        hashed_password: password, 
-      });
-  
-      await newUser.save();
-      
-      return res.status(201).json({
-        success: true,
-        message: "User registered successfully",
-        token: generateToken(newUser),
-        user: {
-          id: newUser._id,
-          name: newUser.name,
-          email: newUser.email,
-          profilePicture: newUser.profilePicture,
-          role: newUser.role
-        }
-      });
-  
-    } catch (error) {
-      console.error("Registration Error:", error);
-      return res.status(500).json({ success: false, message: "Internal Server Error" });
+  try {
+    const { name, email, role, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
     }
-  };
-  
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(400).json({ success: false, message: "User already exists" });
+
+    const newUser = new User({
+      name,
+      email,
+      role: role === "admin" ? "taxpayer" : role,
+      hashed_password: password, // Store hashed password
+    });
+
+    await newUser.save();
+    
+    return res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      token: generateToken(newUser),
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        profilePicture: newUser.profilePicture,
+        role: newUser.role
+      }
+    });
+
+  } catch (error) {
+    console.error("Registration Error:", error);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
   // Login User
   export const loginUser = async (req, res) => {
     try {
@@ -95,10 +94,10 @@ export const registerUser = async (req, res) => {
         token: generateToken(user),
         user: {
           id: user._id,
-          name: user.newUserame,
+          name: user.name,
           email: user.email,
-          profilePicture: newUser.profilePicture,
-          role: newUser.role
+          profilePicture: user.profilePicture,
+          role: user.role
         }
       });
     } catch (error) {
