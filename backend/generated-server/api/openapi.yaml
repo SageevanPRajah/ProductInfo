@@ -1,0 +1,239 @@
+openapi: 3.1.0
+info:
+  description: v1 of Product Info Hub’s standard API
+  title: Product Info Hub API
+  version: 1.0.0
+servers:
+- url: http://localhost:5559
+security:
+- bearerAuth: []
+paths:
+  /api/v1/templates:
+    get:
+      operationId: apiV1TemplatesGET
+      parameters:
+      - explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TemplateWithFields'
+                type: array
+          description: A list of templates
+      summary: List all templates
+      x-eov-operation-handler: controllers/DefaultController
+    post:
+      operationId: apiV1TemplatesPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateCreate'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+          description: Created
+      summary: Create a new template
+      x-eov-operation-handler: controllers/DefaultController
+  /api/v1/templates/{templateId}:
+    delete:
+      operationId: apiV1TemplatesTemplateIdDELETE
+      parameters:
+      - explode: false
+        in: path
+        name: templateId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: No content
+      summary: Delete a template
+      x-eov-operation-handler: controllers/DefaultController
+    get:
+      operationId: apiV1TemplatesTemplateIdGET
+      parameters:
+      - explode: false
+        in: path
+        name: templateId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+          description: The template
+      summary: Get a single template by ID
+      x-eov-operation-handler: controllers/DefaultController
+    parameters:
+    - explode: false
+      in: path
+      name: templateId
+      required: true
+      schema:
+        type: string
+      style: simple
+    patch:
+      operationId: apiV1TemplatesTemplateIdPATCH
+      parameters:
+      - explode: false
+        in: path
+        name: templateId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateUpdate'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+          description: Updated
+      summary: Update a template
+      x-eov-operation-handler: controllers/DefaultController
+components:
+  schemas:
+    Template:
+      example:
+        lifecycleStatus: lifecycleStatus
+        name: name
+        id: id
+        version: version
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        lifecycleStatus:
+          type: string
+      required:
+      - id
+      - name
+    TemplateCreate:
+      example:
+        lifecycleStatus: lifecycleStatus
+        name: name
+      properties:
+        name:
+          type: string
+        lifecycleStatus:
+          type: string
+      required:
+      - name
+    TemplateUpdate:
+      example:
+        lifecycleStatus: lifecycleStatus
+        name: name
+      properties:
+        name:
+          type: string
+        lifecycleStatus:
+          type: string
+    TemplatePage:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/Template'
+          type: array
+        meta:
+          $ref: '#/components/schemas/TemplatePage_meta'
+    TemplateWithFields:
+      example:
+        template:
+          lifecycleStatus: lifecycleStatus
+          name: name
+          id: id
+          version: version
+        fields:
+        - "{}"
+        - "{}"
+      properties:
+        template:
+          $ref: '#/components/schemas/Template'
+        fields:
+          items:
+            $ref: '#/components/schemas/Field'
+          type: array
+      required:
+      - fields
+      - template
+      Field:
+        type: object
+        properties:
+          _id:
+            oneOf:
+            - type: string
+            - type: object
+          templateID:
+            oneOf:
+            - type: string
+            - type: object
+          fieldName:
+            type: string
+          fieldType:
+            type: string
+          fieldDescription:
+            type: string
+          fixed:
+            type: boolean
+          inherited:
+            type: boolean
+          columns:
+            type: array
+            items:
+              type: object
+        required:
+        - _id
+        - templateID
+        - fieldName
+        - fieldType
+        - fieldDescription
+        - fixed
+        - inherited
+    TemplatePage_meta:
+      properties:
+        offset:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+  securitySchemes:
+    bearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
