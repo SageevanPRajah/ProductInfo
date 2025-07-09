@@ -1,0 +1,183 @@
+openapi: 3.1.0
+info:
+  title: Product Info Hub API
+  version: '1.0.0'
+  description: v1 of Product Info Hub’s standard API
+servers:
+  - url: http://localhost:5559/tmf-api/productCatalogManagement/v5
+paths:
+  /productSpecification:
+    get:
+      summary: List all templates
+      parameters:
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 25
+      responses:
+        '200':
+          description: A list of templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductSpecification'
+    post:
+      summary: Create a new template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductSpecificationCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/ProductSpecification'
+  /productSpecification/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Get a single template by ID
+      responses:
+        '200':
+          description: The template
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductSpecification'
+    patch:
+      summary: Update a template
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductSpecificationUpdate'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductSpecification'
+    delete:
+      summary: Delete a template
+      responses:
+        '204':
+          description: No content
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Template:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        lifecycleStatus:
+          type: string
+      required: [id, name]
+    TemplateCreate:
+      type: object
+      properties:
+        name:
+          type: string
+        lifecycleStatus:
+          type: string
+      required: [name]
+    TemplateUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        lifecycleStatus:
+          type: string
+    TemplatePage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Template'
+        meta:
+          type: object
+          properties:
+            offset:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+        # A single element in the GET /api/v1/templates response array
+    TemplateWithFields:
+      type: object
+      properties:
+        template:
+          $ref: '#/components/schemas/Template'
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/Field'
+      required:
+        - template
+        - fields
+
+    # The “Field” object inside that array
+    Field:
+      type: object
+      properties:
+        _id:
+          oneOf:
+            - type: string
+            - type: object
+        templateID:
+          oneOf:
+            - type: string
+            - type: object
+        fieldName:
+          type: string
+        fieldType:
+          type: string
+        fieldDescription:
+          type: string
+        fixed:
+          type: boolean
+        inherited:
+          type: boolean
+        columns:
+          type: array
+          items:
+            type: object
+      required:
+        - _id
+        - templateID
+        - fieldName
+        - fieldType
+        - fieldDescription
+        - fixed
+        - inherited
+
+security:
+  - bearerAuth: []
